@@ -27,8 +27,8 @@ const COLUMN_MAP = {
   client: { label: "Client", width: "w-[10%]" },
   customer: { label: "Customer", width: "w-[7%]" },
   loan: { label: "Loan", width: "w-[6%]" },
-  address: { label: "Address", width: "w-[14%]" },
-  city: { label: "City", width: "w-[6%]" },
+  address: { label: "Address", width: "w-[10%]" },
+  city: { label: "City", width: "w-[10%]" },
   state: { label: "State", width: "w-[6%]" },
   zip: { label: "ZIP", width: "w-[6%]" },
   contractor: { label: "Contractor", width: "w-[8%]" },
@@ -40,7 +40,7 @@ const COLUMN_MAP = {
 export default function WorkOrderTable() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(100);
-  
+
   const { data, isLoading, isError, isFetching } = useQuery({
     queryKey: ["workOrders", page, limit],
     queryFn: async () => {
