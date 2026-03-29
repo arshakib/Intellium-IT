@@ -1,14 +1,8 @@
-import React from "react";
-import { MoreVertical } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
+import { MoreVertical, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -25,97 +19,118 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const data = Array(15).fill({
-  status: "Assigned",
-  wo: "1234",
-  dateDue: "25-04-26",
-  dateReceived: "24-10-25",
-  client: "Client Company",
-  customer: "-",
-  loan: "-",
-  address: "110 Ritchie Mews, Florin",
-  city: "Florin",
-  state: "Poland",
-  zip: "23512",
-  contractor: "Marion",
-  admin: "-",
-  workType: "Initial Secure",
-  photos: "19",
-});
+const COLUMN_MAP = {
+  status: { label: "Status", width: "w-[8%]" },
+  wo: { label: "WO#", width: "w-[5%]" },
+  dateDue: { label: "Due Date", width: "w-[8%]" },
+  dateReceived: { label: "Received", width: "w-[8%]" },
+  client: { label: "Client", width: "w-[10%]" },
+  customer: { label: "Customer", width: "w-[7%]" },
+  loan: { label: "Loan", width: "w-[6%]" },
+  address: { label: "Address", width: "w-[14%]" },
+  city: { label: "City", width: "w-[6%]" },
+  state: { label: "State", width: "w-[6%]" },
+  zip: { label: "ZIP", width: "w-[6%]" },
+  contractor: { label: "Contractor", width: "w-[8%]" },
+  admin: { label: "Admin", width: "w-[5%]" },
+  workType: { label: "Work Type", width: "w-[8%]" },
+  photos: { label: "Photos", width: "w-[5%]" },
+};
 
 export default function WorkOrderTable() {
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(100);
+
+  // 1. FETCH DATA FROM BACKEND
+  const { data, isLoading, isError, isFetching } = useQuery({
+    queryKey: ["workOrders", page, limit],
+    queryFn: async () => {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/work-orders?page=${page}&limit=${limit}`
+      );
+      return response.data;
+    },
+  });
+
+//   console.log(import.meta.env.VITE_API_URL);
+
+ if (isLoading) return (
+    <div className="w-full h-96 flex items-center justify-center bg-white rounded-xl border border-gray-100 font-geist">
+      <div className="flex flex-col items-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        <p className="text-sm text-gray-500">Initializing Dashboard...</p>
+      </div>
+    </div>
+  );
+  if (isError) return <div className="p-20 text-center text-red-500">Backend Error. Check terminal.</div>;
+
+  const firstRow = data?.data?.[0] || {};
+  const visibleColumns = Object.keys(firstRow).filter(
+    (key) => key !== "id" && key !== "createdAt" && COLUMN_MAP[key]
+  );
+
   return (
-    <div className="w-full bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-      <Table className="w-full table-fixed border-collapse font-geist text-[12px]">
-        <TableHeader className="bg-[#F9FAFB]">
-          <TableRow className="hover:bg-transparent border-b border-gray-100 sticky top-0 z-10 bg-white">
-            <TableHead className="w-[7%] font-jakarta font-bold text-gray-900 h-11 px-2">Status</TableHead>
-            <TableHead className="w-[4%] font-jakarta font-bold text-gray-900 px-2">WO#</TableHead>
-            <TableHead className="w-[6%] font-jakarta font-bold text-gray-900 px-2">Due</TableHead>
-            <TableHead className="w-[7%] font-jakarta font-bold text-gray-900 px-2">Received</TableHead>
-            <TableHead className="w-[9%] font-jakarta font-bold text-gray-900 px-2">Client</TableHead>
-            <TableHead className="w-[4%] font-jakarta font-bold text-gray-900 px-2">Cust.</TableHead>
-            <TableHead className="w-[4%] font-jakarta font-bold text-gray-900 px-2">Loan</TableHead>
-            <TableHead className="w-[12%] font-jakarta font-bold text-gray-900 px-2">Address</TableHead>
-            <TableHead className="w-[6%] font-jakarta font-bold text-gray-900 px-2">City</TableHead>
-            <TableHead className="w-[6%] font-jakarta font-bold text-gray-900 px-2">State</TableHead>
-            <TableHead className="w-[6%] font-jakarta font-bold text-gray-900 px-2">ZIP</TableHead>
-            <TableHead className="w-[7%] font-jakarta font-bold text-gray-900 px-2">Contr.</TableHead>
-            <TableHead className="w-[4%] font-jakarta font-bold text-gray-900 px-2">Admin</TableHead>
-            <TableHead className="w-[8%] font-jakarta font-bold text-gray-900 px-2">Work Type</TableHead>
-            <TableHead className="w-[5%] font-jakarta font-bold text-gray-900 px-1 text-center">Photo.</TableHead>
-            <TableHead className="w-[5%] font-jakarta font-bold text-gray-900 text-right pr-4">Action</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data.map((row, index) => (
-            <TableRow key={index} className="hover:bg-gray-50/50 border-b border-gray-50 last:border-0 transition-colors">
-              <TableCell className="py-2 px-2">
-                <Badge className="bg-[#E7F7EF] text-[#0D9444] hover:bg-[#E7F7EF] border-none shadow-none font-semibold px-1.5 py-0.5 rounded-sm text-[10px] uppercase truncate">
-                  {row.status}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-gray-600 px-2 truncate">{row.wo}</TableCell>
-              <TableCell className="text-gray-600 px-2 truncate">{row.dateDue}</TableCell>
-              <TableCell className="text-gray-600 px-2 truncate">{row.dateReceived}</TableCell>
-              <TableCell className="text-gray-600 px-2 truncate font-medium">{row.client}</TableCell>
-              <TableCell className="text-gray-600 px-2 truncate">{row.customer}</TableCell>
-              <TableCell className="text-gray-600 px-2 truncate">{row.loan}</TableCell>
-              <TableCell className="text-gray-600 px-2 truncate" title={row.address}>{row.address}</TableCell>
-              <TableCell className="text-gray-600 px-2 truncate">{row.city}</TableCell>
-              <TableCell className="text-gray-600 px-2 truncate">{row.state}</TableCell>
-              <TableCell className="text-gray-600 px-2 truncate">{row.zip}</TableCell>
-              <TableCell className="text-gray-600 px-2 truncate">{row.contractor}</TableCell>
-              <TableCell className="text-gray-600 px-2 truncate">{row.admin}</TableCell>
-              <TableCell className="text-gray-600 px-2 truncate">{row.workType}</TableCell>
-              <TableCell className="text-gray-600 px-1 text-center">{row.photos}</TableCell>
-              <TableCell className="text-right pr-4">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full">
-                      <MoreVertical size={14} className="text-gray-400" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="font-geist">
-                    <DropdownMenuItem>View Details</DropdownMenuItem>
-                    <DropdownMenuItem>Edit</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+    <div className="w-full bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col font-geist">
+           {isFetching && (
+        <div className="absolute inset-0 z-50 bg-white/50 backdrop-blur-[1px] flex items-center justify-center transition-all">
+          <div className="bg-white px-6 py-4 rounded-lg shadow-xl border border-gray-100 flex items-center gap-3">
+            <Loader2 className="h-5 w-5 animate-spin text-gray-900" />
+            <span className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
+              Updating Table...
+            </span>
+          </div>
+        </div>
+      )}
+
+      <div className={`overflow-x-auto transition-opacity duration-300 ${isFetching ? 'opacity-50' : 'opacity-100'}`}>
+        <Table className="w-full table-fixed border-collapse text-[12px]">
+          <TableHeader className="bg-[#F9FAFB]">
+            <TableRow className="hover:bg-transparent border-b border-gray-100">
+              {visibleColumns.map((key) => (
+                <TableHead key={key} className={`${COLUMN_MAP[key].width} font-jakarta font-bold text-gray-900 h-11 px-3`}>
+                  {COLUMN_MAP[key].label}
+                </TableHead>
+              ))}
+              <TableHead className="w-[5%] font-jakarta font-bold text-gray-900 text-right pr-6">Action</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <div className="flex items-center justify-end px-6 py-3 border-t border-gray-100 gap-8 bg-white font-geist">
+          </TableHeader>
+
+          <TableBody>
+            {data.data.map((row) => (
+              <TableRow key={row.id} className="hover:bg-gray-50/50 border-b border-gray-50 transition-colors">
+                {visibleColumns.map((key) => (
+                  <TableCell key={key} className="py-2.5 px-3 truncate">
+                    {key === "status" ? (
+                      <Badge className="bg-[#E7F7EF] text-[#0D9444] border-none shadow-none font-semibold px-2 py-0.5 rounded-sm text-[10px] uppercase">
+                        {row[key]}
+                      </Badge>
+                    ) : (
+                      <span className={key === "client" ? "font-semibold text-gray-900" : "text-gray-600"}>
+                        {row[key] || "-"}
+                      </span>
+                    )}
+                  </TableCell>
+                ))}
+                <TableCell className="text-right pr-6">
+                   <MoreVertical size={16} className="text-gray-300 ml-auto" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="flex items-center justify-end px-6 py-4 border-t border-gray-100 gap-10 bg-white">
         <div className="flex items-center gap-2">
-          <span className="text-[12px] text-gray-500">Rows Per Page :</span>
-          <Select defaultValue="100">
-            <SelectTrigger className="w-[65px] h-7 text-[12px] border-gray-200 shadow-none focus:ring-0 rounded">
+          <span className="text-[13px] text-gray-500">Rows Per Page :</span>
+          <Select 
+            defaultValue={limit.toString()} 
+            onValueChange={(val) => { setLimit(Number(val)); setPage(1); }}
+          >
+            <SelectTrigger className="w-[70px] h-8 text-[13px] border-gray-200 focus:ring-0">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="font-geist text-[12px]">
+            <SelectContent>
               <SelectItem value="50">50</SelectItem>
               <SelectItem value="100">100</SelectItem>
               <SelectItem value="200">200</SelectItem>
@@ -125,15 +140,28 @@ export default function WorkOrderTable() {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="text-[12px] text-gray-500 hover:text-gray-900">Previous</button>
-          <div className="flex items-center gap-1">
-            <button className="w-7 h-7 flex items-center justify-center border border-gray-200 rounded bg-white text-[12px] font-bold shadow-sm">1</button>
-            <button className="w-7 h-7 flex items-center justify-center text-[12px] text-gray-400">2</button>
-            <button className="w-7 h-7 flex items-center justify-center text-[12px] text-gray-400">3</button>
-            <span className="text-gray-300 px-1 text-[12px]">...</span>
-            <button className="w-7 h-7 flex items-center justify-center text-[12px] text-gray-400">10</button>
+          <button 
+            onClick={() => setPage(p => p - 1)} 
+            disabled={page === 1}
+            className="text-[13px] text-gray-500 hover:text-gray-900 disabled:opacity-30 flex items-center gap-1"
+          >
+            <ChevronLeft size={16} /> Previous
+          </button>
+          
+          <div className="flex items-center gap-2">
+            <span className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded font-bold text-[13px] text-gray-900 shadow-sm">
+              {page}
+            </span>
+            <span className="text-[13px] text-gray-400">of {data.totalPages}</span>
           </div>
-          <button className="text-[12px] text-gray-500 hover:text-gray-900">Next</button>
+
+          <button 
+             onClick={() => setPage(p => p + 1)} 
+             disabled={page >= data.totalPages}
+             className="text-[13px] text-gray-500 hover:text-gray-900 disabled:opacity-30 flex items-center gap-1"
+          >
+            Next <ChevronRight size={16} />
+          </button>
         </div>
       </div>
     </div>
