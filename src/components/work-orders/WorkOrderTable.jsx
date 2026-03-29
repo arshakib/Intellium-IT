@@ -40,8 +40,7 @@ const COLUMN_MAP = {
 export default function WorkOrderTable() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(100);
-
-  // 1. FETCH DATA FROM BACKEND
+  
   const { data, isLoading, isError, isFetching } = useQuery({
     queryKey: ["workOrders", page, limit],
     queryFn: async () => {
