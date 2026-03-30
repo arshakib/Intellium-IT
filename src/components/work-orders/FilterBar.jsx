@@ -45,10 +45,12 @@ export default function FilterBar() {
   const { data: settingsData, isLoading } = useQuery({
     queryKey: ["userSettings"],
     queryFn: async () => {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/settings-data`);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/settings/data`);
       return response.data.data;
     },
   });
+
+  console.log(settingsData);
 
   const mutation = useMutation({
     mutationFn: (newColumns) => {
@@ -110,7 +112,7 @@ export default function FilterBar() {
           <SlidersHorizontalIcon size={14} className="text-gray-500" />
         </button>
       </div>
-      
+
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
           <button className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 flex items-center gap-2">
