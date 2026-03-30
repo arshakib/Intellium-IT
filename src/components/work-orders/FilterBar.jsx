@@ -101,6 +101,16 @@ export default function FilterBar() {
       </div>
 
       <div className="flex-1" />
+
+      <div className="flex items-center p-1 bg-white gap-3.5">
+        <button className="p-1.5 border border-gray-200 rounded-lg hover:bg-gray-100">
+          <LayoutGridIcon size={14} className="text-gray-500" />
+        </button>
+        <button className="p-1.5 border border-gray-200 rounded-lg hover:bg-gray-100">
+          <SlidersHorizontalIcon size={14} className="text-gray-500" />
+        </button>
+      </div>
+      
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
           <button className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 flex items-center gap-2">

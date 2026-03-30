@@ -83,7 +83,7 @@ export default function WorkOrderTable() {
 
       <div className={`overflow-x-auto transition-opacity duration-300 ${isFetching ? 'opacity-50' : 'opacity-100'}`}>
         <Table className="w-full table-fixed border-collapse text-[12px]">
-          <TableHeader className="bg-[#F9FAFB]">
+          <TableHeader className=" bg-[#F9FAFB]">
             <TableRow className="hover:bg-transparent border-b border-gray-100">
               {visibleColumns.map((key) => (
                 <TableHead key={key} className={`${COLUMN_MAP[key].width} font-jakarta font-bold text-gray-900 h-11 px-3`}>
